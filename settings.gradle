@@ -1,1 +1,1 @@
-include ':app', ':com.auto'
+include ':com.dgl.auto', ':com.auto', ':ServiceManager'

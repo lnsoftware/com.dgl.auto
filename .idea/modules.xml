@@ -3,8 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/DGLAuto.iml" filepath="$PROJECT_DIR$/DGLAuto.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ServiceManager/ServiceManager.iml" filepath="$PROJECT_DIR$/ServiceManager/ServiceManager.iml" />
       <module fileurl="file://$PROJECT_DIR$/com.auto/com.auto.iml" filepath="$PROJECT_DIR$/com.auto/com.auto.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.dgl.auto/com.dgl.auto.iml" filepath="$PROJECT_DIR$/com.dgl.auto/com.dgl.auto.iml" />
     </modules>
   </component>
 </project>
