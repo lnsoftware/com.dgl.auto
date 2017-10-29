@@ -6,7 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/ServiceManager/ServiceManager.iml" filepath="$PROJECT_DIR$/ServiceManager/ServiceManager.iml" />
       <module fileurl="file://$PROJECT_DIR$/com.auto_framework/com.auto_framework.iml" filepath="$PROJECT_DIR$/com.auto_framework/com.auto_framework.iml" />
       <module fileurl="file://$PROJECT_DIR$/com.auto_services/com.auto_services.iml" filepath="$PROJECT_DIR$/com.auto_services/com.auto_services.iml" />
-      <module fileurl="file://$PROJECT_DIR$/com.dgl.auto_framework/com.dgl.auto.iml" filepath="$PROJECT_DIR$/com.dgl.auto_framework/com.dgl.auto.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.dgl.auto_framework/com.dgl.auto_framework.iml" filepath="$PROJECT_DIR$/com.dgl.auto_framework/com.dgl.auto_framework.iml" />
     </modules>
   </component>
 </project>
