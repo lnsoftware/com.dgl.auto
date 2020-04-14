@@ -1,20 +1,19 @@
 #include <jni.h>
 #include <stdexcept>
 
-extern "C"
-JNIEXPORT jstring
-
 // Stub library !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-JNICALL
-Java_com_auto_serialport_SerialPort_open(jstring p1, int p2) {
+extern "C"
+JNIEXPORT jobject JNICALL Java_com_auto_serialport_SerialPort_open(JNIEnv *env, jclass clazz, jstring serial_port, jint baud_rate) {
     throw std::runtime_error("Stub!");
 }
 
-int Java_com_auto_serialport_SerialPort_BCWaitArm2Fin() {
+extern "C"
+JNIEXPORT jint JNICALL Java_com_auto_serialport_SerialPort_BCWaitArm2Fin(JNIEnv *env, jobject thiz) {
     throw std::runtime_error("Stub!");
 }
 
-void Java_com_auto_serialport_SerialPort_close() {
+extern "C"
+JNIEXPORT void JNICALL Java_com_auto_serialport_SerialPort_close(JNIEnv *env, jobject thiz) {
     throw std::runtime_error("Stub!");
 }

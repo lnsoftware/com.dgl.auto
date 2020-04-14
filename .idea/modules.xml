@@ -2,11 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/DGLAuto.iml" filepath="$PROJECT_DIR$/DGLAuto.iml" />
-      <module fileurl="file://$PROJECT_DIR$/ServiceManager/ServiceManager.iml" filepath="$PROJECT_DIR$/ServiceManager/ServiceManager.iml" />
-      <module fileurl="file://$PROJECT_DIR$/com.auto_framework/com.auto_framework.iml" filepath="$PROJECT_DIR$/com.auto_framework/com.auto_framework.iml" />
-      <module fileurl="file://$PROJECT_DIR$/com.auto_services/com.auto_services.iml" filepath="$PROJECT_DIR$/com.auto_services/com.auto_services.iml" />
-      <module fileurl="file://$PROJECT_DIR$/com.dgl.auto_framework/com.dgl.auto_framework.iml" filepath="$PROJECT_DIR$/com.dgl.auto_framework/com.dgl.auto_framework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ServiceManager/ServiceManager.iml" filepath="$PROJECT_DIR$/ServiceManager/ServiceManager.iml" group="com.dgl.auto/ServiceManager" />
+      <module fileurl="file://$PROJECT_DIR$/SystemProperties/SystemProperties.iml" filepath="$PROJECT_DIR$/SystemProperties/SystemProperties.iml" group="com.dgl.auto/SystemProperties" />
+      <module fileurl="file://$PROJECT_DIR$/com.auto_framework/com.auto_framework.iml" filepath="$PROJECT_DIR$/com.auto_framework/com.auto_framework.iml" group="com.dgl.auto/com.auto_framework" />
+      <module fileurl="file://$PROJECT_DIR$/com.auto_services/com.auto_services.iml" filepath="$PROJECT_DIR$/com.auto_services/com.auto_services.iml" group="com.dgl.auto/com.auto_services" />
+      <module fileurl="file://$PROJECT_DIR$/com.dgl.auto.iml" filepath="$PROJECT_DIR$/com.dgl.auto.iml" group="com.dgl.auto" />
+      <module fileurl="file://$PROJECT_DIR$/com.dgl.auto_framework/com.dgl.auto_framework.iml" filepath="$PROJECT_DIR$/com.dgl.auto_framework/com.dgl.auto_framework.iml" group="com.dgl.auto/com.dgl.auto_framework" />
     </modules>
   </component>
 </project>

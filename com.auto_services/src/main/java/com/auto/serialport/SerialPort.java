@@ -1,7 +1,6 @@
 package com.auto.serialport;
 
 import android.util.Log;
-
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -15,11 +14,11 @@ public class SerialPort {
     private FileInputStream mFileInputStream = null;
     private FileOutputStream mFileOutputStream = null;
 
-    static  {
-        System.loadLibrary("serialport");
+    static {
+        System.loadLibrary("com/auto/serialport");
     }
 
-    private static native FileDescriptor open(String p1, int p2);
+    private static native FileDescriptor open(String serialPort, int baudRate);
 
     native int BCWaitArm2Fin();
 
@@ -29,16 +28,16 @@ public class SerialPort {
 
     public OutputStream getOutputStream() { return this.mFileOutputStream; }
 
-    public boolean openSerialPort(File paramFile, int paramInt)
+    public boolean openSerialPort(File path, int baudRate)
     {
-        this.mFd = open(paramFile.getAbsolutePath(), paramInt);
-        if (this.mFd == null) {
-            Log.e(TAG, "native open returns null==>mFd:" + this.mFd + "\t devicepath:" + paramFile.getAbsolutePath());
+        mFd = open(path.getAbsolutePath(), baudRate);
+        if (mFd == null) {
+            Log.e(TAG, "native open returns null==>mFd:" + mFd + "\t devicepath:" + path.getAbsolutePath());
             return false;
         }
 
-        this.mFileInputStream = new FileInputStream(this.mFd);
-        this.mFileOutputStream = new FileOutputStream(this.mFd);
+        mFileInputStream = new FileInputStream(mFd);
+        mFileOutputStream = new FileOutputStream(mFd);
         return true;
     }
 }
