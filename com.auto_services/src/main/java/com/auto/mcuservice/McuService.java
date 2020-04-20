@@ -9,6 +9,8 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.util.Log;
 import android.os.SystemProperties;
+
+import com.auto.canbus.CanbusService;
 import com.auto.constant.McuConstant;
 import com.dgl.auto.constant.CallbackConstant;
 import java.io.File;
@@ -311,6 +313,7 @@ public class McuService extends IMcuManager.Stub implements McuConstant, McuCons
     private int mPowerUpState = 0;
     private McuOpHandler mMcuOpHandler = null;
     private Context mContext = null;
+    private String mMcuRestStatu = null;
 
     public boolean mBValidCmd = false;
 
@@ -444,32 +447,31 @@ public class McuService extends IMcuManager.Stub implements McuConstant, McuCons
             bDone = true;
 
             switch (cmd) {
-                case CMD_RESP_POWER_ON: {
+                case CMD_RESP_POWER_ON:
                     if (mPowerUpState == WAITING_POWER_ON_RESP) {
                         mMcuInfo.getmPowerUpStatus().ParseCmd(mcuPacket);
                         EnterPowerUpNextState(false);
                     }
-                    if (bDone) { return; }
-                }
-                case CMD_RET_MODE_FRONT: {
+                    break;
+                case CMD_RET_MODE_FRONT:
                     if (mPowerUpState == WAITING_RETURN_FRONT_SOURCE) {
                         mMcuInfo.getmFrontModeFromMcu().ParseCmd(mcuPacket);
                         EnterPowerUpNextState(false);
                     }
-                }
-                case CMD_RET_AUDIO_SETTING: {
+                    break;
+                case CMD_RET_AUDIO_SETTING:
                     if (mPowerUpState == WAITING_RETURN_AUDIO_SETTING) {
                         mMcuInfo.getmAudioInfo().ParseCmd(mcuPacket);
                         EnterPowerUpNextState(false);
                     }
-                }
-                case CMD_RET_GENERAL_SETTING: {
+                    break;
+                case CMD_RET_GENERAL_SETTING:
                     if (mPowerUpState == WAITING_RETURN_GEN_SETTING) {
                         mMcuInfo.getmGenralSetting().ParseCmd(mcuPacket);
                         EnterPowerUpNextState(false);
                     }
-                }
-                case CMD_RET_DEVICE_DETECTION_INFO: {
+                    break;
+                case CMD_RET_DEVICE_DETECTION_INFO:
                     if (mPowerUpState == WAITING_RETURN_DEVICE_DETECTION_INFO) {
                         mMcuInfo.getmDetectionInfo().ParseCmd(mcuPacket);
                         EnterPowerUpNextState(false);
@@ -477,21 +479,132 @@ public class McuService extends IMcuManager.Stub implements McuConstant, McuCons
                     if (mPowerUpState == POWER_UP_SUCCESS) {
                         SndCmd(CMD_GET_VERSION);
                     }
-                }
-                case CMD_RET_CAR_TYPE: {
+                    break;
+                case CMD_RET_CAR_TYPE:
                     if (mPowerUpState == WAITING_RETURN_CAR_TYPE) {
                         EnterPowerUpNextState(false);
                     }
-                }
+                    break;
+                default:
+                    bDone = false;
             }
-
-            bDone = false;
         }
         if (bDone) { return; }
 
-        // sparse-switch v1, :sswitch_data_1
-
-        return;
+        switch (cmd) {
+            case CMD_RET_MODE_FRONT:
+                mMcuInfo.getmFrontModeFromMcu().ParseCmd(mcuPacket);
+                break;
+            case CMD_RET_MODE_REAR:
+                mMcuInfo.getmRearModeFromMcu().ParseCmd(mcuPacket);
+                break;
+            case CMD_RET_AUDIO_SETTING:
+                mMcuInfo.getmAudioInfo().ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateSetupAudioInfo, true);
+                break;
+            case CMD_RET_GENERAL_SETTING:
+                mMcuInfo.getmGenralSetting().ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateSetupGeneralInfo, true);
+                break;
+            case CMD_RET_VOL_VALUE:
+                mMcuInfo.getmCurrentVolStatus().ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiVolMsg, true);
+                break;
+            case CMD_RET_VERSION:
+                mMcuInfo.getmMcuVersion().ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateMcuVersion, true);
+                break;
+            case CMD_RET_KEY:
+                mMcuInfo.getmKeyCode().ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiProcessKey, true);
+                break;
+            case CMD_RET_TUNER_INFO:
+                mMcuInfo.getmRadioInfo().mCurrentTunerInfo.ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateTunerInfo, true);
+                break;
+            case CMD_RET_TUNER_PRESET_LIST_INFO:
+                mMcuInfo.getmRadioInfo().mRadioListInfo.ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateTunerPresetList, true);
+                break;
+            case CMD_RET_TUNER_SIGNAL_TRENGTH:
+                break;
+            case CMD_RET_DEVICE_DETECTION_INFO:
+                mMcuInfo.getmDetectionInfo().ParseCmd(mcuPacket);
+                OnDeviceDetectionInfo();
+                break;
+            case CMD_ENTER_POWER_OFF:
+                Log.e(TAG, "McuService recv CMD_ENTER_POWER_OFF 0000000000000000000000000000000");
+                McuMsgQueueManager.getInstance().pushNode(eMieiPendPowerOff, mcuPacket.param(0), true);
+                break;
+            case CMD_RET_STEERING_WHEEL_INFO:
+                mMcuInfo.getmSWStatus().ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiSteeringWheelInfoMsg, mcuPacket.param(0), true);
+                break;
+            case CMD_RET_TUNER_RANGE:
+                mMcuInfo.getmRadioInfo().mRadioRangeInfo.ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateTunerRangeInfo, true);
+                break;
+            case CMD_RET_CAN_CMD:
+                mMcuInfo.getmCanBusInfo().ParseCmd(mcuPacket);
+                try {
+                    CanbusService.getInstance().onMessage(1, mMcuInfo.getmCanBusInfo().getmCanData(), mMcuInfo.getmCanBusInfo().getmDataLen());
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case CMD_RET_TV_INFO:
+                mMcuInfo.getmATVInfo().getmCurATVInfo().ParseCmd(mcuPacket);
+                break;
+            case CMD_RET_PRESET_CH_INFO:
+                mMcuInfo.getmATVInfo().getmATVPresetList().ParseCmd(mcuPacket);
+                break;
+            case CMD_RET_RDS_SETTING:
+                mMcuInfo.getmRadioInfo().mRadioRDS.mRDSetting.ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateTunerRdsSettingInfo, true);
+                break;
+            case CMD_RET_RDS_INFO:
+                mMcuInfo.getmRadioInfo().mRadioRDS.mRDSInfo.ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateTunerRdsInfo, true);
+                break;
+            case CMD_RET_RDS_PTY:
+                mMcuInfo.getmRadioInfo().mRadioRDS.mRDSPty.ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateTunerRdsPTYInfo, true);
+                break;
+            case CMD_RET_RDS_PS:
+                mMcuInfo.getmRadioInfo().mRadioRDS.mRDSPS.ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateTunerRdsPSInfo, true);
+                break;
+            case CMD_RET_RDS_RT:
+                mMcuInfo.getmRadioInfo().mRadioRDS.mRDSRT.ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateTunerRdsRTInfo, true);
+                break;
+            case CMD_RET_RDS_CT:
+                mMcuInfo.getmRadioInfo().mRadioRDS.mRDSCT.ParseCmd(mcuPacket);
+                break;
+            case CMD_RET_VOL_OFFSET:
+                mMcuInfo.getmVolumeOffset().ParseCmd(mcuPacket);
+                break;
+            case CMD_RET_CAR_TYPE:
+                break;
+            case CMD_RET_PWM_DUTYCYCLE:
+                mMcuInfo.getmIlluminPWM().ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateIlluminPWMValue, mcuPacket.param(0), true);
+                break;
+            case CMD_RET_PWR_STATUS:
+                mMcuInfo.getmPowerStatus().ParseCmd(mcuPacket);
+                McuMsgQueueManager.getInstance().pushNode(eMieiPowerStatus, mcuPacket.param(0), true);
+                break;
+            case CMD_RET_MCU_RESET_TYPE:
+                handleSaveMcuRestStatu(mcuPacket);
+                break;
+            case CMD_RET_MCU_SHUTDOWN_BK_STATUS:
+                mMcuInfo.getmCurrentBKStatus().ParseCmd(mcuPacket);
+                Log.e(TAG, "BKLight============== McuService recv CMD_RET_MCU_SHUTDOWN_BK_STATUS 0000000000000000000000000000000");
+                McuMsgQueueManager.getInstance().pushNode(eMieiUpdateBKLightStatus, mcuPacket.param(0), true);
+                break;
+        }
     }
 
     void startTimer() {
@@ -610,7 +723,6 @@ public class McuService extends IMcuManager.Stub implements McuConstant, McuCons
         return true;
     }
 
-
     private void DelaySomeCmd(McuRequest request) {
         if (request.mCmd == CMD_SND_MODE_FRONT || request.mCmd == CMD_SND_MODE_REAR)
             try {
@@ -673,12 +785,84 @@ public class McuService extends IMcuManager.Stub implements McuConstant, McuCons
     private void ResumeMode() {
         Utility.turnMode(getCurAppMode());
     }
+    private void handleSaveMcuRestStatu(McuPacket paramMcuPacket) {
+        int bLength = paramMcuPacket.packetLen() - 1;
+        Log.w(TAG, "************getMcuRestState************");
+        Object[] arrayOfObject = new Object[bLength];
+        for (int i = 0; i < bLength; i++)
+            arrayOfObject[i] = Byte.valueOf(paramMcuPacket.param(i));
+        mMcuRestStatu = String.format("%02x %02x %02x %02x %02x %02x %02x %02x %02x", arrayOfObject);
+        Intent intent = new Intent(ACTION_SAVE_MCU_REST_STATUS);
+        intent.putExtra(kEY_MCU_REST_STATUS, mMcuRestStatu);
+        if (mContext != null)
+            mContext.sendBroadcast(intent);
+    }
+    private void OnDeviceDetectionInfo() {
+        McuInfo.DeviceDetectionInfo deviceDetInfo = mMcuInfo.getmDetectionInfo();
+        McuInfo.DeviceDetectionInfo prevDeviceDetInfo = mMcuInfo.getmPrevDetectionInfo();
+
+        boolean bDiscStateChange = (deviceDetInfo.isMbDiscState() != prevDeviceDetInfo.isMbDiscState());
+        if (bDiscStateChange) {
+            int finalDiscState = deviceDetInfo.isMbDiscState() ? 1 : 0;
+            if (finalDiscState == 1 && deviceDetInfo.mbDiscManualInsert) {
+                finalDiscState = 2;
+            }
+            McuMsgQueueManager.getInstance().pushNode(eMieiUpdateDiscDetectStatus, finalDiscState, true);
+        }
+
+        boolean bBrakeChange = (deviceDetInfo.isMbBrakeState() != prevDeviceDetInfo.isMbBrakeState());
+        if (bBrakeChange) {
+            McuMsgQueueManager.getInstance().pushNode(eMieiUpdateBrakeStatus, deviceDetInfo.isMbBrakeState() ? 1 : 0, true);
+        }
+
+        boolean bReverseStateChange = (deviceDetInfo.isMbReverseState() != prevDeviceDetInfo.isMbReverseState());
+        if (bReverseStateChange) {
+            if (deviceDetInfo.isMbReverseState()) {
+                SystemProperties.set("persist.sys.backcar", "1");
+            } else {
+                SystemProperties.set("persist.sys.backcar", "0");
+            }
+            McuMsgQueueManager.getInstance().pushNode(eMieiUpdateReverseState, deviceDetInfo.isMbReverseState() ? 1: 0, true);
+        }
+
+        boolean bIIIumineStateChange = (deviceDetInfo.isMbIIumeState() != prevDeviceDetInfo.isMbIIumeState());
+        if (bIIIumineStateChange) {
+            McuMsgQueueManager.getInstance().pushNode(eMieiUpdateIIIumineStatus, deviceDetInfo.isMbIIumeState() ? 1 : 0, true);
+        }
+
+        boolean bDTVStateChange = (deviceDetInfo.isMbDTVState() != prevDeviceDetInfo.isMbDTVState());
+        if (bDTVStateChange) {
+            McuMsgQueueManager.getInstance().pushNode(eMieiUpdateDTVStatus, deviceDetInfo.isMbDTVState() ? 1 : 0, true);
+        }
+
+        boolean bTestModeChange = (deviceDetInfo.isMbtestMode() != prevDeviceDetInfo.isMbtestMode());
+        if (bTestModeChange) {
+            McuMsgQueueManager.getInstance().pushNode(eMieiUpdateTestMode, deviceDetInfo.isMbtestMode() ? 1 : 0, true);
+        }
+
+        boolean bAgingModeChange = (deviceDetInfo.isMbAgingMode() != prevDeviceDetInfo.isMbAgingMode());
+        if (bAgingModeChange) {
+            McuMsgQueueManager.getInstance().pushNode(eMieiUpdateAgingMode, deviceDetInfo.isMbAgingMode() ? 1 : 0, true);
+        }
+
+        boolean bACCOFFChange = (deviceDetInfo.isMbAccState() != prevDeviceDetInfo.isMbAccState());
+        if (bACCOFFChange) {
+            McuMsgQueueManager.getInstance().pushNode(eMieiAccOn2Off, deviceDetInfo.isMbAccState() ? 1 : 0, true);
+        }
+
+        boolean bCarBTCallStatusChange = (deviceDetInfo.isMbCarBTState() != prevDeviceDetInfo.isMbCarBTState());
+        if (bCarBTCallStatusChange) {
+            McuMsgQueueManager.getInstance().pushNode(eMieiCarBTCallStatus, deviceDetInfo.isMbCarBTState() ? 1 : 0, true);
+        }
+
+        prevDeviceDetInfo.copyValue(deviceDetInfo);
+    }
 
     public McuInfo getMcuInfo() {
         return this.mMcuInfo;
     }
     public boolean Resume() {
-        McuMsgQueueManager.getInstance().pushNode(30, true);
+        McuMsgQueueManager.getInstance().pushNode(eMieiPendPowerOn, true);
         return true;
     }
     public void SndACK(int transactionId, byte[] bBuff, int nLength) {

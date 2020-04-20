@@ -1,10 +1,14 @@
 package com.auto.autoevent;
 
+import android.os.RemoteException;
+
+import com.auto.mcuservice.McuService;
 import com.dgl.auto.constant.CallbackConstant;
 
 public class AutoEvent extends IAutoEvent.Stub implements CallbackConstant.AutoEventCallbackConstant {
     // TODO: Complete
     private static AutoEvent sInstance = null;
+    private McuService mMcuService = null;
 
     public static AutoEvent getInstance() {
         if (sInstance == null) { sInstance = new AutoEvent(); }
@@ -25,5 +29,9 @@ public class AutoEvent extends IAutoEvent.Stub implements CallbackConstant.AutoE
 
     public void onIlluminPWMValue(int nPWMValue) {
         // TODO: Complete
+    }
+
+    public boolean isInBackcar() throws RemoteException {
+        return mMcuService.getMcuInfo().getmDetectionInfo().isMbReverseState();
     }
 }

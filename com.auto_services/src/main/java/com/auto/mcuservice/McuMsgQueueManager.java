@@ -207,7 +207,7 @@ public class McuMsgQueueManager implements CallbackConstant {
             case 17:
                 AutoEvent.getInstance().onIIIumine(mcuMsgNode.getmParam() == 1);
                 break;
-            case 21:
+            case MainInternalMsgIndex.eMieiUpdateIlluminPWMValue:
                 AutoEvent.getInstance().onIlluminPWMValue(mcuMsgNode.getmParam());
                 break;
             case 22:
@@ -222,7 +222,7 @@ public class McuMsgQueueManager implements CallbackConstant {
             case 28:
                 Opandora.getInstance().onEvent(OpandoraCallbackConstant.UPDATE_POWER_STATUS, Integer.toString(mcuMsgNode.getmParam()));
                 break;
-            case 29:
+            case MainInternalMsgIndex.eMieiPendPowerOff:
                 Log.e("TAG", "McuService handle  eMieiPendPowerOff 999999999999999999999999");
                 Opandora.getInstance().onEvent(OpandoraCallbackConstant.UPDATE_PEND_POWER_OFF, null);
                 Log.e("TAG", "McuService HandleSleep tell mcu to poweroff now");

@@ -41,6 +41,9 @@ public class SettingService extends ISetting.Stub implements McuConstant.HostCmd
         // TODO: Complete
     }
 
+    public void saveSysemConfig() {
+        // TODO: Complete
+    }
 
     public String GetEmmcId() throws RemoteException {
         // TODO: Complete
